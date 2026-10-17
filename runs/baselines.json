@@ -1,0 +1,13 @@
+{
+  "uniform": 6.931471805599453,
+  "unigram": 6.85135298277116,
+  "copy-mix": 4.779151169150139,
+  "copy-mix_alpha": 0.39999999999999997,
+  "prev-token": 3.299149214109921,
+  "prev-token+pos": 3.3148191651510315,
+  "repeat_rate_test": 0.3975583982746038,
+  "fit_segments": 1500,
+  "test_segments": 400,
+  "test_shard": "data-0039",
+  "smoothing_k": 0.05
+}

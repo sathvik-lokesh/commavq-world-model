@@ -1,0 +1,26 @@
+{
+  "name": "base",
+  "token_dir": "data/tokens",
+  "train": [
+    "data-0000",
+    "data-0001",
+    "data-0002"
+  ],
+  "test": "data-0039",
+  "layers": 8,
+  "d_model": 512,
+  "heads": 8,
+  "frames": 16,
+  "stride": 1,
+  "batch": 8,
+  "accum": 4,
+  "steps": 20000,
+  "lr": 0.0006,
+  "warmup": 500,
+  "eval_every": 500,
+  "eval_windows": 256,
+  "eval_seg": 400,
+  "compile": false,
+  "seed": 0,
+  "resume": true
+}

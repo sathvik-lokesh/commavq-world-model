@@ -1,0 +1,16 @@
+{
+  "clips": 16,
+  "run": "pose",
+  "token_dir": "data/tokens",
+  "test": "data-0039",
+  "seeds": 2,
+  "context": 15,
+  "future": 40,
+  "temperature": 1.0,
+  "min_seg": 400,
+  "clip_seed": 2026,
+  "out": "dreams_stop",
+  "steer": "stop",
+  "yaw": 0.2,
+  "videos": 1
+}

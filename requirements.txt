@@ -1,0 +1,7 @@
+imageio==2.38.1
+imageio-ffmpeg==0.6.0
+matplotlib==3.11.2
+numpy==2.5.4
+onnxruntime==1.31.0
+torch==2.11.0+cu128
+tqdm==4.70.1
