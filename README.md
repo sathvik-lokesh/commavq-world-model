@@ -4,9 +4,9 @@ A small GPT world model for driving video, trained from scratch on one laptop GP
 
 All numbers below come from held-out data, and the tests for each milestone were written down before the results came in. Two of them failed, and both failures are reported as they came out.
 
-![Same start, four controls](runs/pose/steer.png)
+![Same start, four controls](runs/pose/steer.gif)
 
-*One held-out night clip. Top row: what really happened. Below it: the model's dream from the same 15 real frames with the real motion, a right turn, a left turn and a stop fed in. In the stop row the lane dashes stay put; in the turn rows the road swings away.*
+*One held-out night clip. "What happened" is the real video. The other four are the model's dreams from the same 15 real frames, with the real motion, a right turn, a left turn and a stop fed in. Green bar = real context frames, red bar = imagined.*
 
 ## Setup
 
@@ -47,7 +47,9 @@ Going from 1 to 15 frames gains 0.50 nats (paired 95% CI 0.498-0.510), and 95% o
 
 ## M3: dreams
 
-The model samples 40 frames (2 s) after 15 real ones, on 16 held-out clips picked by a fixed seed before generating, with 2 samples each. Videos are in `runs/base/dreams/`, including the worst clip.
+The model samples 40 frames (2 s) after 15 real ones, on 16 held-out clips picked by a fixed seed before generating, with 2 samples each. Videos (top = real, bottom = dream): [clip 0](runs/base/dreams/clip0_seg2188_983.mp4), [clip 1](runs/base/dreams/clip1_seg775_748.mp4), [best](runs/base/dreams/best_seg1167_189.mp4), [worst](runs/base/dreams/worst_seg1381_1108.mp4), all in `runs/base/dreams/`.
+
+![M3 dream metrics](runs/base/dreams/dreams.png)
 
 - **They look right.** Roads, lane lines, cars, signs and night scenes stay coherent for the full 2 s. The motion rate (share of tokens that change per frame) is 0.60-0.62 in dreams vs 0.58-0.62 in real video, so they neither freeze nor melt into noise.
 - **Test failed: they don't beat a frozen last frame on pixel error.** Pixel MAE against the real future ties the frozen-frame baseline (13.3 vs 13.3 at 0.5 s, 21.6 vs 20.2 at 2 s), and only 6/16 clips win. In the worst clip the real car brakes for a stop sign while the dream keeps cruising. It's a believable future, just not the one that happened, and pixel error punishes that. The dream has no way to know what the driver chose to do, which is what M4 is for.
@@ -64,6 +66,10 @@ Four tests, written before any results:
 | 2. With the real pose, dreams beat the frozen frame at short horizons | **fail** | 7.7 vs 7.4 at 0.05 s, 13.1 vs 13.3 at 0.5 s; 6/16 clips win, same as M3 |
 | 3. Steer right turns right, steer left turns left (yaw +-0.2 rad/s) | **pass** | image shift: right +16.7 px, real -3.2, left -30.1; right is right of left on 16/16 clips |
 | 4. Stop slows the dream | **pass** | motion rate 0.44 vs 0.60 with the real pose; lower on 16/16 clips |
+
+![Stills at 0.5, 1 and 2 s](runs/pose/steer.png)
+
+The steered videos for every clip are in `runs/pose/dreams_{real,right,left,stop}/`.
 
 **What this says:** the model really is action-conditioned. Change the controls and the imagined world responds the right way, on every clip. But knowing the real motion barely helps it predict the real pixels: the real pose beats no pose by only 0.006 nats (CI 0.004-0.008), because 15 frames of video already show how the car is moving. Wrong motion costs a lot (+0.136), right motion adds almost nothing. Test 2 fails because the randomness in sampling, not the car's motion, dominates pixel error over 2 s.
 
@@ -83,7 +89,7 @@ make dreams RUN=base                        # M3, ~20 min
 make start RUN=pose ARGS=--pose             # M4 model
 make poseeval                               # test 1
 make steer                                  # tests 2-4, ~2 h (decoding runs on the CPU)
-make figures                                # runs/curve.png, runs/pose/steer.png
+make figures                                # runs/curve.png, runs/pose/steer.png + steer.gif
 ```
 
 Python calls use `-E -s` so a ROS install on `PYTHONPATH` can't break imports.

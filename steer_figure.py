@@ -1,7 +1,7 @@
 """Same start, four controls: one clip's dream under real/right/left/stop pose, at 0, 0.5, 1 and 2 s.
 
 Reads the mp4s written by dreams.py (top half = real future, bottom half = dream) and writes
-runs/pose/steer.png. Frame 14 is the last real context frame; 15.. are imagined at 20 fps.
+runs/pose/steer.png (stills) and runs/pose/steer.gif (the whole 0.75 s context + 2 s dream, animated). Frame 14 is the last real context frame; 15.. are imagined at 20 fps.
 """
 import argparse
 
@@ -10,6 +10,31 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image, ImageDraw
+
+
+def tile(img, label):
+    """(128,256,3) frame -> same frame under an 18 px caption bar."""
+    bar = Image.new("RGB", (img.shape[1], 18), (255, 255, 255))
+    ImageDraw.Draw(bar).text((4, 3), label, fill=(0, 0, 0))
+    return np.concatenate([np.asarray(bar), img], 0)
+
+
+def gif(vids, out, context=15, fps=20):
+    """3x2 grid per frame: what happened, then the four dreams, plus a clock tile."""
+    frames = []
+    for f in range(len(vids["real"])):
+        t = "real context" if f < context else f"imagined +{(f - context + 1) / fps:.2f} s"
+        im = Image.new("RGB", (256, 128), (255, 255, 255))
+        ImageDraw.Draw(im).text((60, 58), t, fill=(0, 0, 0))
+        tiles = [tile(vids["real"][f, :128], "what happened")]
+        tiles += [tile(vids[st][f, 128:], f"dream: {st}") for st in ["real", "right", "left", "stop"]]
+        tiles.append(tile(np.asarray(im), ""))
+        rows = [np.concatenate(tiles[i:i + 2], 1) for i in range(0, 6, 2)]
+        frames.append(Image.fromarray(np.concatenate(rows, 0)))
+    frames += [frames[-1]] * fps                                      # hold the last frame 1 s
+    frames[0].save(out, save_all=True, append_images=frames[1:], duration=1000 // fps, loop=0)
 
 
 def main():
@@ -33,6 +58,8 @@ def main():
     fig.tight_layout()
     fig.savefig(a.out, dpi=120)
     print("wrote", a.out)
+    gif(vids, a.out.replace(".png", ".gif"))
+    print("wrote", a.out.replace(".png", ".gif"))
 
 
 if __name__ == "__main__":
